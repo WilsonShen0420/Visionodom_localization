@@ -1,0 +1,21 @@
+visual_localization:
+  # --- Subscribed Topics ---
+  vo_odom_topic: "/vo/odom"                          # Visual odometry output from RTAB-Map
+  slam_pose_topic: "/slam_pose"                      # LiDAR SLAM localization output
+
+  # --- TF Frames ---
+  map_frame: "map"
+  odom_frame: "vo_odom"                              # VO odometry frame
+  camera_frame: "camera_link"
+
+  # --- SLAM Correction ---
+  slam_set_pose_service: "/set_pose"                 # Existing SLAM initialpose service
+  translation_threshold: 0.5                         # meters - trigger correction above this
+  rotation_threshold: 0.3                            # radians (~17 degrees)
+  consecutive_threshold: 5                           # Must exceed N consecutive times to trigger
+  comparison_rate: 2.0                               # Hz - how often to compare poses
+  cooldown_duration: 30.0                            # seconds - minimum interval between corrections
+
+  # --- Publishing ---
+  tf_publish_rate: 30.0                              # Hz - TF broadcast rate
+  pose_publish_rate: 10.0                            # Hz - absolute pose topic publish rate

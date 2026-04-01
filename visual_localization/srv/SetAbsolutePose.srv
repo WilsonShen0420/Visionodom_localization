@@ -1,0 +1,8 @@
+# Service for external systems to provide absolute pose reference
+# Once called, the node transitions to ABSOLUTE_MODE and begins
+# publishing map -> camera_link TF
+
+geometry_msgs/PoseStamped pose    # Absolute pose in map frame
+---
+bool success
+string message

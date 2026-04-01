@@ -1,0 +1,36 @@
+<!--
+  Full visual localization system launch file.
+  Launches RTAB-Map VO + visual_localization_node.
+
+  Usage:
+    RGB-D (RealSense):
+      roslaunch visual_localization visual_localization.launch camera_type:=rgbd
+
+    Stereo (LeTMC-520):
+      roslaunch visual_localization visual_localization.launch camera_type:=stereo
+
+    With IMU:
+      roslaunch visual_localization visual_localization.launch camera_type:=rgbd use_imu:=true
+-->
+
+<launch>
+  <!-- Camera & IMU arguments -->
+  <arg name="camera_type"  default="rgbd" />
+  <arg name="use_imu"      default="false" />
+  <arg name="imu_topic"    default="/imu/data" />
+
+  <!-- RTAB-Map Visual Odometry -->
+  <include file="$(find visual_localization)/launch/rtabmap_vo.launch">
+    <arg name="camera_type" value="$(arg camera_type)" />
+    <arg name="use_imu"     value="$(arg use_imu)" />
+    <arg name="imu_topic"   value="$(arg imu_topic)" />
+  </include>
+
+  <!-- Visual Localization Node -->
+  <node pkg="visual_localization" type="visual_localization_node"
+        name="visual_localization" output="screen">
+    <rosparam file="$(find visual_localization)/config/params.yaml"
+              command="load" subst_value="true" />
+  </node>
+
+</launch>

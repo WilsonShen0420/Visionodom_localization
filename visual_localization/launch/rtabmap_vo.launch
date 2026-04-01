@@ -1,0 +1,91 @@
+<!--
+  RTAB-Map Visual Odometry launch file
+  Launches rgbd_odometry node for RGB-D cameras (e.g., RealSense D435/D455)
+  or stereo_odometry for stereo cameras (e.g., LeTMC-520).
+
+  Usage:
+    For RGB-D camera (default):
+      roslaunch visual_localization rtabmap_vo.launch camera_type:=rgbd
+
+    For Stereo camera:
+      roslaunch visual_localization rtabmap_vo.launch camera_type:=stereo
+
+    With IMU:
+      roslaunch visual_localization rtabmap_vo.launch use_imu:=true imu_topic:=/imu/data
+-->
+
+<launch>
+  <arg name="camera_type"    default="rgbd"  doc="Camera type: 'rgbd' or 'stereo'" />
+  <arg name="use_imu"        default="false" doc="Enable IMU fusion for improved odometry" />
+  <arg name="imu_topic"      default="/imu/data" />
+
+  <!-- RGB-D camera topics (e.g., RealSense) -->
+  <arg name="rgb_topic"      default="/camera/color/image_raw" />
+  <arg name="depth_topic"    default="/camera/aligned_depth_to_color/image_raw" />
+  <arg name="camera_info"    default="/camera/color/camera_info" />
+
+  <!-- Stereo camera topics (e.g., LeTMC-520) -->
+  <arg name="left_topic"     default="/stereo/left/image_rect" />
+  <arg name="right_topic"    default="/stereo/right/image_rect" />
+  <arg name="left_info"      default="/stereo/left/camera_info" />
+  <arg name="right_info"     default="/stereo/right/camera_info" />
+
+  <!-- Output -->
+  <arg name="odom_topic"     default="/vo/odom" />
+  <arg name="odom_frame_id"  default="vo_odom" />
+  <arg name="frame_id"       default="camera_link" />
+
+  <!-- ============ RGB-D Odometry (RealSense) ============ -->
+  <group if="$(eval camera_type == 'rgbd')">
+    <node pkg="rtabmap_ros" type="rgbd_odometry" name="visual_odometry" output="screen">
+      <remap from="rgb/image"       to="$(arg rgb_topic)" />
+      <remap from="depth/image"     to="$(arg depth_topic)" />
+      <remap from="rgb/camera_info" to="$(arg camera_info)" />
+      <remap from="odom"            to="$(arg odom_topic)" />
+      <remap from="imu"             to="$(arg imu_topic)" if="$(arg use_imu)" />
+
+      <param name="frame_id"        value="$(arg frame_id)" />
+      <param name="odom_frame_id"   value="$(arg odom_frame_id)" />
+      <param name="publish_tf"      value="false" />  <!-- We handle TF ourselves -->
+      <param name="wait_imu_to_init" value="$(arg use_imu)" />
+
+      <!-- Odometry strategy: 0=Frame-to-Map (more robust), 1=Frame-to-Frame -->
+      <param name="Odom/Strategy"     value="0" />
+      <!-- Feature type: 6=ORB (fast & robust) -->
+      <param name="Vis/FeatureType"   value="6" />
+      <!-- Minimum inliers to accept transform -->
+      <param name="Vis/MinInliers"    value="15" />
+      <!-- Max features per frame -->
+      <param name="Vis/MaxFeatures"   value="1000" />
+      <!-- Guess from motion model to improve tracking -->
+      <param name="Odom/GuessMotion"  value="true" />
+      <!-- Reset counters before lost -->
+      <param name="Odom/ResetCountdown" value="2" />
+    </node>
+  </group>
+
+  <!-- ============ Stereo Odometry (LeTMC-520) ============ -->
+  <group if="$(eval camera_type == 'stereo')">
+    <node pkg="rtabmap_ros" type="stereo_odometry" name="visual_odometry" output="screen">
+      <remap from="left/image_rect"   to="$(arg left_topic)" />
+      <remap from="right/image_rect"  to="$(arg right_topic)" />
+      <remap from="left/camera_info"  to="$(arg left_info)" />
+      <remap from="right/camera_info" to="$(arg right_info)" />
+      <remap from="odom"              to="$(arg odom_topic)" />
+      <remap from="imu"               to="$(arg imu_topic)" if="$(arg use_imu)" />
+
+      <param name="frame_id"          value="$(arg frame_id)" />
+      <param name="odom_frame_id"     value="$(arg odom_frame_id)" />
+      <param name="publish_tf"        value="false" />
+      <param name="wait_imu_to_init"  value="$(arg use_imu)" />
+
+      <param name="Odom/Strategy"     value="0" />
+      <param name="Vis/FeatureType"   value="6" />
+      <param name="Vis/MinInliers"    value="15" />
+      <param name="Vis/MaxFeatures"   value="1000" />
+      <param name="Odom/GuessMotion"  value="true" />
+      <param name="Odom/ResetCountdown" value="2" />
+    </node>
+  </group>
+
+</launch>
