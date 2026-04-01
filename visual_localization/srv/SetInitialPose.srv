@@ -1,0 +1,8 @@
+# Service definition for correcting LiDAR SLAM pose (ROS1 equivalent of nav2_msgs/SetInitialPose)
+# This should match the service type of your existing SLAM set_pose service.
+# Adapt this definition if your system uses a different message structure.
+
+geometry_msgs/PoseWithCovarianceStamped pose
+---
+bool success
+string message

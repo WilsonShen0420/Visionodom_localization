@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>visual_localization</name>
+  <version>1.0.0</version>
+  <description>
+    Visual odometry based localization node that provides redundant positioning
+    alongside LiDAR SLAM. Uses RTAB-Map visual odometry with optional IMU fusion
+    to maintain camera-based pose estimation, and can correct drifted LiDAR SLAM
+    by sending initialpose when deviation is detected.
+  </description>
+
+  <maintainer email="todo@todo.com">TODO</maintainer>
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>roscpp</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>nav_msgs</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>tf2</build_depend>
+  <build_depend>tf2_ros</build_depend>
+  <build_depend>tf2_geometry_msgs</build_depend>
+  <build_depend>tf2_eigen</build_depend>
+  <build_depend>message_generation</build_depend>
+  <build_depend>eigen_conversions</build_depend>
+
+  <exec_depend>roscpp</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>nav_msgs</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>tf2</exec_depend>
+  <exec_depend>tf2_ros</exec_depend>
+  <exec_depend>tf2_geometry_msgs</exec_depend>
+  <exec_depend>tf2_eigen</exec_depend>
+  <exec_depend>message_runtime</exec_depend>
+  <exec_depend>eigen_conversions</exec_depend>
+
+  <!-- Runtime dependencies for the full system -->
+  <exec_depend>rtabmap_ros</exec_depend>
+</package>
