@@ -15,10 +15,16 @@ find_package(catkin REQUIRED COMPONENTS
   tf2_geometry_msgs
   tf2_eigen
   message_generation
+  diagnostic_msgs
   eigen_conversions
 )
 
 find_package(Eigen3 REQUIRED)
+
+add_message_files(
+  FILES
+  SlamDeviation.msg
+)
 
 add_service_files(
   FILES
@@ -30,6 +36,7 @@ generate_messages(
   DEPENDENCIES
   std_msgs
   geometry_msgs
+  diagnostic_msgs
 )
 
 catkin_package(
@@ -44,6 +51,7 @@ catkin_package(
     tf2_geometry_msgs
     tf2_eigen
     message_runtime
+    diagnostic_msgs
     eigen_conversions
 )
 

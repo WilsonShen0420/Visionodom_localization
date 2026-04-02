@@ -8,13 +8,28 @@ visual_localization:
   odom_frame: "vo_odom"                              # VO odometry frame
   camera_frame: "camera_link"
 
-  # --- SLAM Correction ---
+  # --- SLAM Correction Service ---
   slam_set_pose_service: "/set_pose"                 # Existing SLAM initialpose service
-  translation_threshold: 0.5                         # meters - trigger correction above this
-  rotation_threshold: 0.3                            # radians (~17 degrees)
-  consecutive_threshold: 5                           # Must exceed N consecutive times to trigger
-  comparison_rate: 2.0                               # Hz - how often to compare poses
   cooldown_duration: 30.0                            # seconds - minimum interval between corrections
+  comparison_rate: 2.0                               # Hz - how often to compare poses
+
+  # --- Dual-Layer Thresholds ---
+  # Layer 1: Jump detection (high confidence → auto-correct)
+  jump_translation_threshold: 3.0                    # meters
+  jump_rotation_threshold: 1.0                       # radians (~57 degrees)
+  jump_consecutive_threshold: 2                      # count at comparison_rate
+
+  # Layer 2: Drift detection (low confidence → alert only)
+  drift_translation_threshold: 1.0                   # meters
+  drift_rotation_threshold: 0.5                      # radians (~29 degrees)
+  drift_consecutive_threshold: 10                    # count at comparison_rate
+
+  # --- VO Health Check ---
+  vo_max_covariance_position: 0.5                    # Max acceptable position variance (diagonal)
+  vo_max_covariance_rotation: 0.3                    # Max acceptable rotation variance (diagonal)
+  vo_max_age: 0.5                                    # seconds - max staleness of VO data
+  vo_max_trust_duration: 120.0                       # seconds - max time since anchor
+  vo_max_trust_distance: 50.0                        # meters - max travel distance from anchor
 
   # --- Publishing ---
   tf_publish_rate: 30.0                              # Hz - TF broadcast rate
