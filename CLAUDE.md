@@ -6,12 +6,17 @@ Visual odometry based redundant localization system for ROS Noetic mobile robots
 Runs alongside LiDAR SLAM to provide camera-based pose estimation using RTAB-Map,
 and can automatically correct drifted SLAM via initialpose service calls.
 
+The system acts as a **safety monitor / anomaly detector** — it does not replace
+LiDAR SLAM but detects catastrophic jumps and alerts on gradual drift (ADR-001).
+
 ## Repository Structure
 
 ```
 visual_localization/          # ROS Noetic catkin package
 ├── src/
 │   └── visual_localization_node.cpp   # Main C++ node
+├── msg/
+│   └── SlamDeviation.msg              # Deviation diagnostic message
 ├── srv/
 │   ├── SetAbsolutePose.srv            # Service: receive absolute pose from external
 │   └── SetInitialPose.srv             # Service: SLAM correction (ROS1 equivalent of nav2_msgs)
@@ -22,6 +27,8 @@ visual_localization/          # ROS Noetic catkin package
 │   └── rtabmap_vo.launch              # RTAB-Map visual odometry only
 ├── CMakeLists.txt
 └── package.xml
+docs/adr/
+└── ADR-001-vo-health-check-threshold-alert-mode.md
 ```
 
 ## Build
@@ -64,6 +71,8 @@ Two operating modes:
 | Sub | `/vo/odom` | `nav_msgs/Odometry` | RTAB-Map VO output |
 | Sub | `/slam_pose` | `geometry_msgs/PoseStamped` | LiDAR SLAM pose |
 | Pub | `~/pose` | `geometry_msgs/PoseStamped` | Absolute pose (in ABSOLUTE_MODE) |
+| Pub | `~/vo_health` | `diagnostic_msgs/DiagnosticStatus` | VO health status |
+| Pub | `~/slam_deviation` | `SlamDeviation` | Deviation measurement & level |
 | TF | `vo_odom -> camera_link` | - | Always published |
 | TF | `map -> vo_odom` | - | Published in ABSOLUTE_MODE |
 | Srv Server | `~/set_absolute_pose` | `SetAbsolutePose` | Inject absolute pose reference |
@@ -76,17 +85,38 @@ T_map_to_odom = T_absolute_anchor * inv(T_vo_at_anchor)
 T_absolute(t) = T_map_to_odom * T_vo(t)
 ```
 
+### Dual-Layer SLAM Deviation Detection (ADR-001)
+
+```
+Layer 1 — Jump detection (auto-correct when VO healthy):
+  trans > 3.0m OR rot > 1.0rad, consecutive >= 2
+
+Layer 2 — Drift detection (alert only, no auto-correct):
+  trans > 1.0m OR rot > 0.5rad, consecutive >= 10
+```
+
+### VO Health Check (ADR-001)
+
+All four conditions must pass for VO to be considered healthy:
+1. **Covariance** — position variance <= 0.5, rotation variance <= 0.3
+2. **Anchor time** — elapsed since last anchor <= 120s
+3. **Anchor distance** — accumulated travel <= 50m
+4. **Data freshness** — last VO message age <= 0.5s
+
+Auto-correction is **blocked** when VO is unhealthy, even if a jump is detected.
+
 ### SLAM Correction Safeguards
 
-- Consecutive threshold: must exceed N consecutive checks (default 5)
+- Dual-layer thresholds: jump (high confidence) vs drift (low confidence)
+- VO health gate: must pass all health checks before correcting
 - Cooldown: minimum 30s between corrections
-- Dual threshold: translation (0.5m) and rotation (0.3rad) independently checked
+- Consecutive threshold: must sustain across multiple checks
 
 ## Key Dependencies
 
 - `rtabmap_ros` (visual odometry engine)
 - `tf2`, `tf2_ros`, `tf2_eigen`, `eigen_conversions`
-- `geometry_msgs`, `nav_msgs`
+- `geometry_msgs`, `nav_msgs`, `diagnostic_msgs`
 
 ## Hardware Support
 
